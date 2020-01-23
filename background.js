@@ -77,13 +77,24 @@ function assembleCmd(url, referUrl) {
     let curlText = "curl";  // curl command holder
     let wgetText = "wget";  // wget command holder
     let ariaText = "aria2c"; // aria2 command holder
-    if (verboseOption) { curlText += " -v"; wgetText += " -v"; ariaText += " --console-log-level=debug"; }
-    if (resumeOption) { curlText += " -C -"; wgetText += " -c"; ariaText += " -c"; }
+    let axelText = "axel -a"; // axel command holder
+    if (verboseOption) {
+     curlText += " -v";
+     wgetText += " -v";
+     ariaText += " --console-log-level=debug";
+     axelText += " -v"
+    }
+    if (resumeOption) {
+     curlText += " -C -";
+     wgetText += " -c";
+     ariaText += " -c";
+    }
     try {
         if (ratelimitOption.replace(/\s/g,'')) { 
             curlText += " --limit-rate " + ratelimitOption; 
             wgetText += " --limit-rate " + ratelimitOption;
             ariaText += " --max-overall-download-limit=" + ratelimitOption;
+            axelText += " --max-speed=" + ratelmitOption;
         }
     }
     catch (e) {
@@ -108,6 +119,7 @@ function assembleCmd(url, referUrl) {
         curlText += " -o " + filenameOption;
         wgetText += " -O " + filenameOption;
         ariaText += " -o " + filenameOption;
+        axelText += " -o " + filenameOption;
     }
         
     curlText += 
@@ -148,12 +160,14 @@ function assembleCmd(url, referUrl) {
     if (quotesOption) {
         curlText = curlText.replace(/'/g,'"');
         wgetText = wgetText.replace(/'/g,'"');
-        ariaText = wgetText.replace(/'/g,'"');
+        ariaText = ariaText.replace(/'/g,'"');
+        axelText = wgetText.replace(/'/g,'"');
     }
     
     const curlCode = "copyToClipboard(" + JSON.stringify(curlText) + ", " + snackbarOption + ");";
     const wgetCode = "copyToClipboard(" + JSON.stringify(wgetText) + ", " + snackbarOption + ");";
     const ariaCode = "copyToClipboard(" + JSON.stringify(ariaText) + ", " + snackbarOption + ");";
+    const axelCode = "copyToClipboard(" + JSON.stringify(axelCode) + ", " + snackbarOption + ");";
     
     switch (programOption) {
         case "curl":
@@ -164,6 +178,9 @@ function assembleCmd(url, referUrl) {
             break;
         case "aria":
             return (ariaCode);
+            break;
+        case "axel":
+            return (axelCode);
             break;
     }
     //return (programOption === "curl") ? curlCode : wgetCode;
@@ -233,6 +250,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
             curlUserOption = res.curlUser;
             wgetUserOption = res.wgetUser;
             ariaUserOption = res.ariaUser;
+            ariaUserOption = res.axelUser;
             snackbarOption = res.snackbar;
         });
     let promiseCancel = new Promise(function(resolve,reject) {
